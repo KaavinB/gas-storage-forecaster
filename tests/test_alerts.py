@@ -11,6 +11,13 @@ pytestmark = pytest.mark.db
 AS_OF = date(2000, 1, 12)  # synthetic rows live in 2000, before any real data
 
 
+@pytest.fixture(autouse=True)
+def email_env(monkeypatch):
+    """Hermetic email settings: tests must not depend on a developer's .env."""
+    monkeypatch.setenv("ALERT_EMAIL_TO", "desk@example.com")
+    monkeypatch.setenv("ALERT_EMAIL_FROM", "bot@example.com")
+
+
 def _forecast(conn, predicted: float, baseline: float) -> None:
     conn.execute(
         """INSERT INTO fact_forecast (run_date, target, target_period, model_name,
@@ -81,9 +88,7 @@ def test_failed_delivery_is_retried(db_conn, monkeypatch):
     assert alert_run.deliver(db_conn) == ("sent", 1)
 
 
-def test_email_escapes_html_and_summarises(monkeypatch):
-    monkeypatch.setenv("ALERT_EMAIL_TO", "desk@example.com")
-    monkeypatch.setenv("ALERT_EMAIL_FROM", "bot@example.com")
+def test_email_escapes_html_and_summarises():
     msg = notify.build_email([
         {"severity": "critical", "message": "Henry Hub <b>spike</b>"},
         {"severity": "warning", "message": "Storage forecast"},

@@ -18,6 +18,12 @@ jobs:
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       EIA_API_KEY: ${{ secrets.EIA_API_KEY }}
+      SMTP_HOST: smtp.gmail.com
+      SMTP_PORT: "587"
+      SMTP_USER: ${{ secrets.SMTP_USER }}
+      SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+      ALERT_EMAIL_FROM: ${{ secrets.SMTP_USER }}
+      ALERT_EMAIL_TO: ${{ secrets.ALERT_EMAIL_TO }}
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6
@@ -30,3 +36,7 @@ jobs:
         run: uv run python -m ingestion.run
       - name: Data-quality checks (stops the run on failure)
         run: uv run python -m ingestion.dq
+      - name: Forecast next storage report and Henry Hub direction
+        run: uv run python -m models.forecast
+      - name: Evaluate alerts and email new ones
+        run: uv run python -m alerts.run

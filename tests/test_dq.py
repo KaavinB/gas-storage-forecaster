@@ -17,6 +17,12 @@ def test_evaluate_thresholds(observed, expected):
     assert dq.evaluate(observed, _check(warn_above=5, fail_above=7)) == expected
 
 
+def test_warn_only_check_never_fails():
+    check = dq.Check("c", "t", "SELECT 1", warn_above=0, fail_above=None, description="")
+    assert dq.evaluate(1_000, check) == "warn"
+    assert dq.evaluate(0, check) == "pass"
+
+
 def test_every_check_query_runs_against_schema(db_conn):
     for check in dq.CHECKS:
         value = db_conn.execute(check.sql, {"as_of": date(2026, 1, 1)}).fetchone()

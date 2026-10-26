@@ -54,3 +54,11 @@ def fit_predict_storage(model, train: pd.DataFrame, test: pd.DataFrame) -> np.nd
 def fit_predict_direction(model, train: pd.DataFrame, test: pd.DataFrame) -> np.ndarray:
     model.fit(train[FEATURES], train["y_price_up"].astype(int))
     return model.predict_proba(test[FEATURES])[:, 1]
+
+
+def with_direction_labels(forecasts: pd.DataFrame) -> pd.DataFrame:
+    """'up'/'down' for direction forecasts (P(up) >= 0.5), None for storage forecasts."""
+    is_dir = forecasts["target"] == "henry_hub_direction"
+    up = forecasts["predicted_value"] >= 0.5
+    labels = np.where(is_dir, np.where(up, "up", "down"), None)
+    return forecasts.assign(predicted_label=labels)

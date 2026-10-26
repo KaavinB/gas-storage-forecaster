@@ -23,6 +23,7 @@ from models.registry import (
     fit_predict_direction,
     fit_predict_storage,
     storage_models,
+    with_direction_labels,
 )
 
 log = get_logger("backtest")
@@ -81,13 +82,7 @@ def walk_forward(df: pd.DataFrame) -> pd.DataFrame:
         if len(records) and i % 52 == 0:
             log.info("walk-forward at %s", row["issue_date"])
 
-    out = pd.DataFrame(records)
-    is_dir = out["target"] == "henry_hub_direction"
-    out["predicted_label"] = None
-    out.loc[is_dir, "predicted_label"] = np.where(
-        out.loc[is_dir, "predicted_value"] >= 0.5, "up", "down"
-    )
-    return out
+    return with_direction_labels(pd.DataFrame(records))
 
 
 # ---------------------------------------------------------------------------

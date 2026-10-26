@@ -31,9 +31,21 @@ http:
   timeout_seconds: 30
   max_attempts: 5
 
+forecast:
+  # Live models, chosen from the walk-forward backtest (reports/backtest_results.md).
+  storage_model: xgboost          # lowest MAE (15.8 Bcf vs 30.0 for the 5-yr baseline)
+  direction_model: ridge_logistic # best of a no-skill field; shown on the dashboard, never alerted on
+
 alerts:
-  # Fire when the forecast weekly storage change differs from the 5-year average
-  # change for that week by more than this many Bcf.
+  channel: email
+  # Storage: fire when the forecast weekly change differs from the 5-yr average change by more
+  # than this. Backtest 2020-26: fires on ~27% of weeks, and the forecast picks the correct side
+  # of the 5-yr average 98% of the time when it does (actual deviation averages ~63 Bcf).
   storage_vs_5yr_bcf: 25
-  # Fire when Henry Hub spot moves more than this percent day over day.
-  henry_hub_dod_pct: 5.0
+  # Henry Hub: fire on a day-over-day spot move larger than this. Spot is very volatile
+  # (5% moves happened on ~85 days/yr since 2020); 10% fires ~25 days/yr.
+  henry_hub_dod_pct: 10.0
+  # EIA publishes prices in weekly batches, so check every day in this window on each run.
+  price_lookback_days: 14
+  # Severity escalates to critical at this multiple of the threshold.
+  critical_multiple: 2.0

@@ -39,6 +39,26 @@ def test_upsert_is_idempotent_and_only_counts_real_changes(db_conn):
     assert [float(r[0]) for r in stored] == [2.0, 2.15, 2.2]
 
 
+def test_upsert_writes_null_for_missing_values(db_conn):
+    df = pd.DataFrame({
+        "run_date": [date(2000, 1, 5)] * 2,
+        "target": ["storage_change_bcf", "henry_hub_direction"],
+        "target_period": [date(2000, 1, 7)] * 2,
+        "model_name": ["test"] * 2,
+        "predicted_value": [10.0, float("nan")],
+        "predicted_label": [None, "up"],
+        "is_backtest": [True] * 2,
+    })
+    upsert(db_conn, "fact_forecast", df,
+           key_cols=["run_date", "target", "target_period", "model_name", "is_backtest"],
+           value_cols=["predicted_value", "predicted_label"])
+    rows = db_conn.execute(
+        "SELECT predicted_value IS NULL, predicted_label IS NULL FROM fact_forecast "
+        "WHERE model_name = 'test' ORDER BY target DESC"
+    ).fetchall()
+    assert rows == [(False, True), (True, False)]
+
+
 def test_dim_date_maps_every_day_to_the_friday_ending_its_storage_week(db_conn):
     rows = db_conn.execute(
         "SELECT full_date, storage_week_ending FROM dim_date "

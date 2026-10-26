@@ -37,8 +37,11 @@ def upsert(
             )
         )
         with cur.copy(sql.SQL("COPY {} ({}) FROM STDIN").format(stage, col_list)) as copy:
-            # astype(object) turns numpy scalars into plain Python values psycopg can adapt
-            for row in df[cols].astype(object).itertuples(index=False, name=None):
+            # astype(object) turns numpy scalars into plain Python values psycopg can adapt;
+            # missing values (None/NaN/NaT) must become NULL, not the text 'nan' or numeric NaN
+            values = df[cols].astype(object)
+            values = values.where(values.notna(), None)
+            for row in values.itertuples(index=False, name=None):
                 copy.write_row(row)
 
         cur.execute(

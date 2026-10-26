@@ -24,7 +24,7 @@ class Check:
     table: str
     sql: str  # returns a single numeric value; may reference %(as_of)s
     warn_above: float | None
-    fail_above: float
+    fail_above: float | None  # None = warn-only: never blocks the pipeline
     description: str
 
 
@@ -92,14 +92,14 @@ CHECKS = [
         "storage_change_out_of_range", "v_storage_weekly",
         "SELECT count(*) FROM v_storage_weekly WHERE abs(net_change_bcf) > 400",
         warn_above=None, fail_above=0,
-        description="Largest weekly move on record is a ~-359 Bcf withdrawal (Jan 2018)",
+        description="Record weekly withdrawal is -359 Bcf (Jan 2018 and Jan 2026)",
     ),
     Check(
         "price_out_of_range", "fact_gas_price_daily",
         "SELECT count(*) FROM fact_gas_price_daily "
         "WHERE price_usd_mmbtu <= 0 OR price_usd_mmbtu > 50",
         warn_above=None, fail_above=0,
-        description="Henry Hub spot peaked near $24 in Feb 2021 (Winter Storm Uri)",
+        description="Highest Henry Hub spot in the data is $30.72 (2026-01-23 cold snap)",
     ),
     Check(
         "price_dod_moves_over_40pct_last_30d", "fact_gas_price_daily",
@@ -108,8 +108,10 @@ CHECKS = [
                           OVER (ORDER BY price_date) - 1 AS ret
                FROM fact_gas_price_daily WHERE hub = 'henry_hub') r
            WHERE abs(ret) > 0.40 AND price_date > %(as_of)s::date - 30""",
-        warn_above=0, fail_above=3,
-        description="Spikes this large happen (cold snaps) but are rare; flag for a human look",
+        # Warn-only: in Jan 2026 spot moved +265% / -46% in days. Those were real, and blocking
+        # the pipeline then would stop forecasts and alerts exactly when the desk needs them.
+        warn_above=0, fail_above=None,
+        description="Real during cold snaps but rare; flag for a human look, never block",
     ),
     Check(
         "degree_days_out_of_range", "fact_weather_daily",
@@ -121,7 +123,9 @@ CHECKS = [
 
 
 def evaluate(observed: float | None, check: Check) -> str:
-    if observed is None or observed > check.fail_above:
+    if observed is None:
+        return "fail"
+    if check.fail_above is not None and observed > check.fail_above:
         return "fail"
     if check.warn_above is not None and observed > check.warn_above:
         return "warn"

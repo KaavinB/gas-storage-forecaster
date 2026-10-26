@@ -4,7 +4,7 @@ export
 PY := uv run python
 
 .DEFAULT_GOAL := help
-.PHONY: help setup up down migrate psql test lint ingest ingest-full dq backtest
+.PHONY: help setup up down migrate psql test lint ingest ingest-full dq backtest forecast alerts daily
 
 help: ## List available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' Makefile | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
@@ -33,6 +33,14 @@ dq: ## Run data-quality checks (exits non-zero on failure)
 
 backtest: ## Walk-forward backtest (~3 min); writes reports/backtest_results.md
 	$(PY) -m models.backtest
+
+forecast: ## Retrain on all published data and store today's forecasts
+	$(PY) -m models.forecast
+
+alerts: ## Evaluate alert rules, log them and email new ones
+	$(PY) -m alerts.run
+
+daily: ingest dq forecast alerts ## The full daily pipeline, as run by GitHub Actions
 
 psql: ## Open a psql shell inside the container
 	docker compose exec db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB)

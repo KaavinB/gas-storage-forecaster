@@ -15,7 +15,17 @@ sources:
       - [Population.Heating.txt, hdd, population]
       - [Population.Cooling.txt, cdd, population]
       - [UtilityGas.Heating.txt, hdd, utility_gas]
-    history_start_year: 2010
+    history_start_year: 2000
+
+# When each source is usable on an issue date D. The backtest and the live job apply the
+# same rules, so the model never sees fresher data in testing than it gets in production.
+availability:
+  # storage rows: usable once release_date <= D (stored on each row)
+  weather_lag_days: 2   # CPC files run ~2 days behind
+  price_lag_days: 7     # EIA republishes Henry Hub spot weekly; 7 days is a safe upper bound
+
+features:
+  weather_normal_years: 10   # trailing 10-year normals, common on gas desks
 
 http:
   timeout_seconds: 30

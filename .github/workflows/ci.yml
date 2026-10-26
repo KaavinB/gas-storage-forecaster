@@ -34,4 +34,9 @@ jobs:
       - run: uv sync --locked
       - run: uv run ruff check .
       - run: uv run python -m core.migrate
+      # Real history so the look-ahead (leakage) tests run against actual data, not a stub.
+      - name: Load public data for integration tests
+        run: uv run python -m ingestion.run --full
+        env:
+          EIA_API_KEY: ${{ secrets.EIA_API_KEY }}
       - run: uv run pytest -v

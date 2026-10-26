@@ -4,155 +4,172 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Gas Storage Monitor</title>
-  <meta name="description" content="Weekly forecasts of US Lower-48 natural gas storage and Henry Hub direction from public EIA and NOAA data, with walk-forward backtests, data-quality checks and alerts. Refreshed daily.">
+  <meta name="description" content="Weekly forecasts of US natural gas storage, made the day before each EIA report from public EIA and NOAA data. Updated daily.">
   <meta property="og:title" content="Gas Storage Monitor">
-  <meta property="og:description" content="Lower-48 natural gas storage forecasts, backtests and alerts from public EIA and NOAA data. Refreshed daily.">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a78d6'/%3E%3Cpath d='M7 21l5-6 4 3 7-9' stroke='white' stroke-width='2.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <meta property="og:description" content="Weekly forecasts of US natural gas storage, made the day before each EIA report. Updated daily.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2316181d'/%3E%3Cpath d='M7 21l5-6 4 3 7-9' stroke='%23fbfbf9' stroke-width='2.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <header class="site-header">
-    <div class="wrap header-row">
-      <div>
-        <h1>Gas Storage Monitor</h1>
-        <p class="lede">Lower-48 natural gas storage and Henry Hub: next-report forecasts, walk-forward backtests and threshold alerts, rebuilt daily from public EIA and NOAA data.</p>
-      </div>
-      <div class="header-actions">
-        <a class="button" href="https://github.com/KaavinB/gas-storage-forecaster">Source on GitHub</a>
-        <button class="button icon-button" id="theme-toggle" type="button" aria-label="Toggle dark mode">
-          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3a7 7 0 1 0 7 7 5.5 5.5 0 0 1-7-7z"/></svg>
-        </button>
-      </div>
+  <header class="masthead">
+    <div class="wrap masthead-row">
+      <p class="brand">Gas Storage Monitor</p>
+      <a href="https://github.com/KaavinB/gas-storage-forecaster">Source on GitHub</a>
     </div>
-    <div class="wrap status-row" id="status-row" aria-live="polite"></div>
   </header>
 
   <main class="wrap">
-    <section class="summary" aria-label="Current outlook">
-      <article class="card hero" id="hero"></article>
-      <div class="tiles" id="tiles"></div>
-    </section>
+    <section class="lead" aria-labelledby="lead-title">
+      <h1 id="lead-title">Weekly forecasts of US natural gas storage, made the day before each EIA report.</h1>
+      <p class="meta" id="meta"></p>
+      <div class="notice" id="notice" hidden></div>
 
-    <div class="filter-row" role="group" aria-label="Time range for all charts">
-      <span class="filter-label">Range</span>
-      <div class="segmented" id="range">
-        <button type="button" data-range="1">1Y</button>
-        <button type="button" data-range="3" aria-pressed="true">3Y</button>
-        <button type="button" data-range="5">5Y</button>
-        <button type="button" data-range="all">Since 2016</button>
+      <div class="lead-grid">
+        <div class="forecast" id="forecast"></div>
+
+        <figure class="chart-block" id="recent-chart">
+          <figcaption>
+            <h2>Forecast vs actual</h2>
+            <p>Weekly change in storage, Bcf, over the past year.</p>
+          </figcaption>
+          <div class="legend" data-legend></div>
+          <div class="chart" data-chart></div>
+          <details class="data-view">
+            <summary>Show data</summary>
+            <div data-table></div>
+          </details>
+        </figure>
       </div>
-    </div>
-
-    <section class="card chart-card" id="storage-card">
-      <header class="card-head">
-        <div>
-          <h2>Working gas in storage vs 5-year range</h2>
-          <p class="sub">Lower-48, Bcf. Band = 5-year min–max for the same calendar day, interpolated as EIA does.</p>
-        </div>
-        <div class="legend" data-legend></div>
-      </header>
-      <div class="chart" data-chart></div>
-      <details class="table-view"><summary>View as table</summary><div data-table></div></details>
     </section>
 
-    <div class="grid-2">
-      <section class="card chart-card" id="forecast-card">
-        <header class="card-head">
-          <div>
-            <h2>Weekly change: forecast vs actual</h2>
-            <p class="sub">Bcf. Each forecast was made the day before EIA's release using only data published by then.</p>
-          </div>
-          <div class="legend" data-legend></div>
-        </header>
-        <div class="chart" data-chart></div>
-        <details class="table-view"><summary>View as table</summary><div data-table></div></details>
-      </section>
-
-      <section class="card chart-card" id="error-card">
-        <header class="card-head">
-          <div>
-            <h2>Forecast error over time</h2>
-            <p class="sub">Trailing 52-week mean absolute error, Bcf. Lower is better.</p>
-          </div>
-          <div class="legend" data-legend></div>
-        </header>
-        <div class="chart" data-chart></div>
-        <details class="table-view"><summary>View as table</summary><div data-table></div></details>
-      </section>
-    </div>
-
-    <section class="card chart-card" id="price-card">
-      <header class="card-head">
+    <section class="section" id="storage" aria-labelledby="storage-title">
+      <div class="section-head">
         <div>
-          <h2>Henry Hub spot and price alerts</h2>
-          <p class="sub" id="price-sub">$/MMBtu, daily, log scale. Markers show day-over-day moves that cross the alert threshold.</p>
+          <h2 id="storage-title">Gas in storage</h2>
+          <p>Lower 48 working gas compared with the past five years, Bcf.</p>
         </div>
-        <div class="legend" data-legend></div>
-      </header>
-      <div class="chart" data-chart></div>
-      <details class="table-view"><summary>View as table</summary><div data-table></div></details>
-    </section>
-
-    <div class="grid-2">
-      <section class="card" id="backtest-card">
-        <header class="card-head"><div>
-          <h2>Walk-forward backtest</h2>
-          <p class="sub" id="backtest-sub"></p>
-        </div></header>
-        <div id="backtest"></div>
-      </section>
-
-      <section class="card" id="alerts-card">
-        <header class="card-head">
-          <div>
-            <h2>Alerts</h2>
-            <p class="sub" id="alerts-sub"></p>
-          </div>
-          <div class="segmented small" id="alert-tabs" role="tablist">
-            <button type="button" role="tab" data-tab="live" aria-selected="true">Live log</button>
-            <button type="button" role="tab" data-tab="replay" aria-selected="false">Rule replay</button>
-          </div>
-        </header>
-        <div id="alerts"></div>
-      </section>
-    </div>
-
-    <section class="card prose" id="method">
-      <h2>How it works</h2>
-      <div class="method-grid">
-        <div>
-          <h3>Pipeline</h3>
-          <ol class="steps">
-            <li><strong>Ingest</strong> EIA weekly storage, EIA Henry Hub spot and NOAA CPC degree days into PostgreSQL with idempotent upserts.</li>
-            <li><strong>Check</strong> 12 data-quality rules (freshness, gaps, ranges). A failure stops the run before anything is published.</li>
-            <li><strong>Forecast</strong> the next EIA report with models retrained daily on everything published so far.</li>
-            <li><strong>Alert</strong> by email when thresholds are crossed. Every alert is logged once, however often the job runs.</li>
-            <li><strong>Publish</strong> this page. GitHub Actions runs the whole chain every day.</li>
-          </ol>
-        </div>
-        <div>
-          <h3>Why it's trustworthy</h3>
-          <ul>
-            <li>Every feature uses only data public on the forecast date. A test scrambles all later data and checks that no feature changes.</li>
-            <li>Models are scored walk-forward against a naive 5-year-average baseline, with Diebold–Mariano and binomial significance tests.</li>
-            <li>Weather is NOAA's gas-home-weighted heating degree days against trailing 10-year normals.</li>
-            <li>The price-direction model shows no skill, and the page says so instead of hiding it.</li>
-          </ul>
-          <h3>Data</h3>
-          <p class="sources">
-            <a href="https://www.eia.gov/naturalgas/storage/">EIA weekly storage</a> ·
-            <a href="https://www.eia.gov/dnav/ng/hist/rngwhhdd.htm">EIA Henry Hub spot</a> ·
-            <a href="https://www.cpc.ncep.noaa.gov/products/analysis_monitoring/cdus/degree_days/">NOAA CPC degree days</a>
-          </p>
-          <p class="sources">Download: <a href="data/storage_weekly.csv">storage_weekly.csv</a> · <a href="data/storage_forecasts.csv">storage_forecasts.csv</a> · <a href="data/henry_hub_daily.csv">henry_hub_daily.csv</a></p>
+        <div class="segmented" id="range" role="group" aria-label="Time range">
+          <button type="button" data-range="1">1Y</button>
+          <button type="button" data-range="3" aria-pressed="true">3Y</button>
+          <button type="button" data-range="5">5Y</button>
+          <button type="button" data-range="all">All</button>
         </div>
       </div>
+      <figure class="chart-block" id="storage-chart">
+        <div class="legend" data-legend></div>
+        <div class="chart" data-chart></div>
+        <details class="data-view">
+          <summary>Show data</summary>
+          <div data-table></div>
+        </details>
+      </figure>
+    </section>
+
+    <section class="section" id="detail" aria-label="More detail">
+      <div class="tabs" role="tablist" aria-label="More detail">
+        <button type="button" role="tab" id="tab-accuracy" aria-controls="panel-accuracy" aria-selected="true">Accuracy</button>
+        <button type="button" role="tab" id="tab-price" aria-controls="panel-price" aria-selected="false" tabindex="-1">Henry Hub</button>
+        <button type="button" role="tab" id="tab-alerts" aria-controls="panel-alerts" aria-selected="false" tabindex="-1">Alerts</button>
+      </div>
+
+      <div class="tab-panel" role="tabpanel" id="panel-accuracy" aria-labelledby="tab-accuracy">
+        <figure class="chart-block" id="error-chart">
+          <figcaption>
+            <h3>Forecast error</h3>
+            <p>Average miss over the previous 52 weeks, Bcf. Lower is better.</p>
+          </figcaption>
+          <div class="legend" data-legend></div>
+          <div class="chart" data-chart></div>
+          <details class="data-view">
+            <summary>Show data</summary>
+            <div data-table></div>
+          </details>
+        </figure>
+        <div id="accuracy-table"></div>
+      </div>
+
+      <div class="tab-panel" role="tabpanel" id="panel-price" aria-labelledby="tab-price" hidden>
+        <figure class="chart-block" id="price-chart">
+          <figcaption>
+            <h3>Henry Hub spot price</h3>
+            <p id="price-caption"></p>
+          </figcaption>
+          <div class="legend" data-legend></div>
+          <div class="chart" data-chart></div>
+          <details class="data-view">
+            <summary>Show data</summary>
+            <div data-table></div>
+          </details>
+        </figure>
+        <div id="direction"></div>
+      </div>
+
+      <div class="tab-panel" role="tabpanel" id="panel-alerts" aria-labelledby="tab-alerts" hidden>
+        <p class="panel-intro" id="alert-rules"></p>
+        <div id="alert-log"></div>
+        <details class="data-view" id="alert-replay"></details>
+      </div>
+    </section>
+
+    <section class="section method" id="method" aria-labelledby="method-title">
+      <h2 id="method-title">Method</h2>
+      <p class="method-summary">
+        The forecast is refreshed daily from EIA weekly storage, EIA Henry Hub spot prices, and NOAA
+        heating and cooling degree days. Ridge regression and XGBoost predict how far the week will
+        differ from the five-year average; XGBoost is the published forecast. Accuracy is measured
+        on forecasts made the day before each Thursday release, using only data public at the time.
+      </p>
+
+      <details class="method-item">
+        <summary>Data sources</summary>
+        <div id="sources"></div>
+      </details>
+
+      <details class="method-item">
+        <summary>Forecast timing and look-ahead checks</summary>
+        <p>On the Wednesday before a release the report week has already ended and its weather is
+          known, but EIA has not yet published the storage figure. Every input has a publication rule: storage counts once
+          released, degree days two days after the fact, and Henry Hub prices seven days after,
+          because EIA posts them in weekly batches.</p>
+        <p>A test overwrites all data published after a forecast date with placeholder values and
+          confirms the forecast inputs do not change. Models are retrained before every forecast
+          and only learn from outcomes that had been published by then.</p>
+      </details>
+
+      <details class="method-item">
+        <summary>Backtest</summary>
+        <p id="backtest-text"></p>
+        <p><a href="https://github.com/KaavinB/gas-storage-forecaster/blob/main/reports/backtest_results.md">Full backtest report</a>, including results by year and season and the largest misses.</p>
+      </details>
+
+      <details class="method-item">
+        <summary>Pipeline and data checks</summary>
+        <p>A GitHub Actions job runs daily at 16:37 UTC, after the Thursday release. It loads new data
+          into PostgreSQL, runs 12 data checks for freshness, gaps and out-of-range values, retrains
+          the models, sends alerts and rebuilds this page. If a data check fails, nothing is
+          published. Loads are idempotent, so re-running a day changes nothing.</p>
+      </details>
+
+      <details class="method-item">
+        <summary>Limitations</summary>
+        <ul>
+          <li>The backtest uses current, revised EIA and NOAA data, not the values as first published.</li>
+          <li>EIA reclassifications between working and base gas are part of the weekly change. In the week ending June 11, 2021 the reported change was +16 Bcf against an implied flow of about +67 Bcf.</li>
+          <li>The models understate the most extreme cold weeks, when production freeze-offs add to demand. Production data is not used.</li>
+          <li>Henry Hub prices arrive about a week late from EIA, which limits any price model.</li>
+        </ul>
+      </details>
     </section>
   </main>
 
-  <footer class="wrap site-footer">
-    <span>Built by <a href="https://github.com/KaavinB">KaavinB</a>. Not investment advice.</span>
-    <span id="generated"></span>
+  <footer class="wrap">
+    <div class="footer-row">
+    <p>Data: <a href="data/storage_weekly.csv">storage_weekly.csv</a> · <a href="data/storage_forecasts.csv">storage_forecasts.csv</a> · <a href="data/henry_hub_daily.csv">henry_hub_daily.csv</a></p>
+    <p>Built by <a href="https://github.com/KaavinB">KaavinB</a>. Not investment advice.</p>
+    </div>
   </footer>
 
   <div class="tooltip" id="tooltip" role="status" hidden></div>

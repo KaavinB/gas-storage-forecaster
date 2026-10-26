@@ -36,7 +36,7 @@ Both models beat the baseline in every year from 2020 to 2026. The gain is large
 
 Full tables, including per-year and per-season error, the largest misses and model drivers, are in [`reports/backtest_results.md`](reports/backtest_results.md).
 
-![Forecast vs actual and error over time](dashboards/screenshots/dashboard-forecasts.png)
+![Forecast error over time and backtest results](dashboards/screenshots/dashboard-accuracy.png)
 
 ## Why this matters to a gas trading and logistics business
 

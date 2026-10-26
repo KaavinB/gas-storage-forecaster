@@ -130,6 +130,13 @@ def latest_live() -> dict:
     }
 
 
+def live_since() -> str | None:
+    """Date of the first live (non-backtest) forecast, i.e. when daily runs began."""
+    query = "SELECT min(run_date) AS d FROM fact_forecast WHERE NOT is_backtest"
+    first = read_sql(query).iloc[0]["d"]
+    return first.isoformat() if first is not None else None
+
+
 def alert_log() -> list[dict]:
     df = read_sql(
         """SELECT created_at, run_date, subject_date, rule_name, severity, message,
@@ -137,6 +144,12 @@ def alert_log() -> list[dict]:
     )
     df["created_at"] = df["created_at"].map(lambda t: t.strftime("%Y-%m-%d %H:%M UTC"))
     return _records(df)
+
+
+def _signed(value: float, digits: int = 0) -> str:
+    """'+12' / '\u221212' with a true minus sign, matching the dashboard's number style."""
+    text = f"{abs(value):,.{digits}f}"
+    return text if round(value, digits) == 0 else ("+" if value > 0 else "\u2212") + text
 
 
 def alert_replay(forecasts: pd.DataFrame, price_df: pd.DataFrame) -> list[dict]:
@@ -150,12 +163,12 @@ def alert_replay(forecasts: pd.DataFrame, price_df: pd.DataFrame) -> list[dict]:
     for week, d, f, b in zip(forecasts["week_ending"], dev, forecasts[model],
                              forecasts["baseline_5yr"], strict=True):
         if abs(d) > cfg["storage_vs_5yr_bcf"]:
-            side = "looser" if d > 0 else "tighter"
             rows.append({
                 "subject_date": week.isoformat(), "rule_name": "storage_vs_5yr",
                 "severity": "critical" if abs(d) >= critical * cfg["storage_vs_5yr_bcf"]
                 else "warning",
-                "message": f"Forecast {f:+.0f} Bcf vs 5-yr avg {b:+.0f} ({d:+.0f}, {side})",
+                "message": f"Forecast {_signed(f)} Bcf, {abs(d):.0f} Bcf "
+                           f"{'above' if d > 0 else 'below'} the five-year average ({_signed(b)})",
             })
     moves = price_df[price_df["dod_pct"].abs() > cfg["henry_hub_dod_pct"]]
     for r in moves.itertuples():
@@ -163,7 +176,7 @@ def alert_replay(forecasts: pd.DataFrame, price_df: pd.DataFrame) -> list[dict]:
             "subject_date": r.price_date.isoformat(), "rule_name": "henry_hub_dod",
             "severity": "critical" if abs(r.dod_pct) >= critical * cfg["henry_hub_dod_pct"]
             else "warning",
-            "message": f"Henry Hub spot {r.dod_pct:+.1f}% to ${r.price:.2f}/MMBtu",
+            "message": f"Henry Hub spot {_signed(r.dod_pct, 1)}% to ${r.price:.2f}/MMBtu",
         })
     return sorted(rows, key=lambda r: r["subject_date"], reverse=True)
 
@@ -209,6 +222,7 @@ def main() -> None:
         "rolling_mae": _records(mae),
         "prices": _records(recent_prices),
         "alerts": alert_log(),
+        "live_since": live_since(),
         "alert_replay": alert_replay(forecasts, recent_prices),
         "thresholds": settings()["alerts"],
     }

@@ -6,6 +6,16 @@ on:
     # Off the top of the hour because GitHub delays cron jobs queued at :00.
     - cron: "37 16 * * *"
   workflow_dispatch:
+  # Re-publish when the dashboard itself changes. Every step is idempotent, so re-running
+  # ingestion, forecasts and alerts on the same day writes nothing new and sends nothing twice.
+  push:
+    branches: [main]
+    paths: ["dashboards/**"]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
 concurrency:
   group: daily-pipeline
@@ -40,3 +50,20 @@ jobs:
         run: uv run python -m models.forecast
       - name: Evaluate alerts and email new ones
         run: uv run python -m alerts.run
+      - name: Export dashboard data
+        run: uv run python -m dashboards.export
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dashboards/site
+
+  deploy:
+    needs: pipeline
+    # Set the repository variable PAGES_ENABLED=true once GitHub Pages is switched on.
+    if: vars.PAGES_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

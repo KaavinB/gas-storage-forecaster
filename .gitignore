@@ -16,3 +16,6 @@ htmlcov/
 artifacts/
 *.log
 .DS_Store
+
+# Generated daily by dashboards/export.py
+dashboards/site/data/

@@ -4,7 +4,7 @@ export
 PY := uv run python
 
 .DEFAULT_GOAL := help
-.PHONY: help setup up down migrate psql test lint ingest ingest-full dq
+.PHONY: help setup up down migrate psql test lint ingest ingest-full dq backtest
 
 help: ## List available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' Makefile | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
@@ -30,6 +30,9 @@ ingest-full: migrate ## Reload full history (2010 onward)
 
 dq: ## Run data-quality checks (exits non-zero on failure)
 	$(PY) -m ingestion.dq
+
+backtest: ## Walk-forward backtest (~3 min); writes reports/backtest_results.md
+	$(PY) -m models.backtest
 
 psql: ## Open a psql shell inside the container
 	docker compose exec db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB)

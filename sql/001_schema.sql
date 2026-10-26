@@ -86,10 +86,15 @@ CREATE TABLE IF NOT EXISTS fact_forecast (
     predicted_value  numeric(10, 3),                     -- Bcf, or P(price up) for direction
     predicted_label  text,                               -- 'up' / 'down' for direction
     baseline_value   numeric(10, 3),                     -- naive baseline for the same target
+    actual_value     numeric(10, 3),                     -- filled in once the outcome is published
     is_backtest      boolean      NOT NULL DEFAULT false,
     created_at       timestamptz  NOT NULL DEFAULT now(),
+    updated_at       timestamptz  NOT NULL DEFAULT now(),
     UNIQUE (run_date, target, target_period, model_name, is_backtest)
 );
+-- Columns added after the first release; no-ops on fresh databases.
+ALTER TABLE fact_forecast ADD COLUMN IF NOT EXISTS actual_value numeric(10, 3);
+ALTER TABLE fact_forecast ADD COLUMN IF NOT EXISTS updated_at timestamptz NOT NULL DEFAULT now();
 
 -- ---------------------------------------------------------------------------
 -- Operations: alerts, data quality, ETL run log

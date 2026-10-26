@@ -1,0 +1,193 @@
+{
+  "storage": [
+    {
+      "model": "baseline_5yr",
+      "n": 356,
+      "mae": 30.042616372391652,
+      "rmse": 43.55364800483167,
+      "bias": -0.2983146067415725,
+      "mae_vs_baseline_pct": 0.0,
+      "dm_p_value": null
+    },
+    {
+      "model": "ridge",
+      "n": 356,
+      "mae": 16.129989261196474,
+      "rmse": 22.436349101793812,
+      "bias": -1.718718063285959,
+      "mae_vs_baseline_pct": -46.30963874364985,
+      "dm_p_value": 3.601837198454025e-11
+    },
+    {
+      "model": "xgboost",
+      "n": 356,
+      "mae": 15.84384429576967,
+      "rmse": 21.436286700451877,
+      "bias": 0.7614765784504374,
+      "mae_vs_baseline_pct": -47.26210227705157,
+      "dm_p_value": 6.666648885937906e-12
+    }
+  ],
+  "direction": [
+    {
+      "model": "baseline_persistence",
+      "accuracy": 0.4604519774011299,
+      "ci_low": 0.4092319592654746,
+      "ci_high": 0.5125210983811237,
+      "p_vs_coin": 0.15117562636644516,
+      "n": 354,
+      "vs_persistence_pp": 0.0
+    },
+    {
+      "model": "baseline_majority",
+      "accuracy": 0.4858757062146893,
+      "ci_low": 0.43424265370664616,
+      "ci_high": 0.5378120097385676,
+      "p_vs_coin": 0.6324670839682709,
+      "n": 354,
+      "vs_persistence_pp": 2.5423728813559365
+    },
+    {
+      "model": "ridge_logistic",
+      "accuracy": 0.5084745762711864,
+      "ci_low": 0.45658583277620957,
+      "ci_high": 0.5601813691566622,
+      "p_vs_coin": 0.7904790381119982,
+      "n": 354,
+      "vs_persistence_pp": 4.80225988700565
+    },
+    {
+      "model": "xgboost",
+      "accuracy": 0.4604519774011299,
+      "ci_low": 0.4092319592654746,
+      "ci_high": 0.5125210983811237,
+      "p_vs_coin": 0.15117562636644516,
+      "n": 354,
+      "vs_persistence_pp": 0.0
+    }
+  ],
+  "storage_by_season": [
+    {
+      "season": "withdrawal (Nov-Mar)",
+      "baseline_5yr": 49.85094905094905,
+      "ridge": 21.043720787869564,
+      "xgboost": 20.615663904058827
+    },
+    {
+      "season": "injection (Apr-Oct)",
+      "baseline_5yr": 16.744064386317906,
+      "ridge": 12.831099081317356,
+      "xgboost": 12.640228314617788
+    }
+  ],
+  "storage_by_year": [
+    {
+      "year": 2020,
+      "baseline_5yr": 24.706738544474394,
+      "ridge": 15.562076639996299,
+      "xgboost": 18.49514000452754
+    },
+    {
+      "year": 2021,
+      "baseline_5yr": 28.813736263736264,
+      "ridge": 18.819596283415535,
+      "xgboost": 18.246503539579912
+    },
+    {
+      "year": 2022,
+      "baseline_5yr": 29.635714285714286,
+      "ridge": 19.56812089629876,
+      "xgboost": 16.684730474044986
+    },
+    {
+      "year": 2023,
+      "baseline_5yr": 31.324725274725274,
+      "ridge": 16.301514817301438,
+      "xgboost": 14.241497430303593
+    },
+    {
+      "year": 2024,
+      "baseline_5yr": 34.91538461538461,
+      "ridge": 16.125986698431724,
+      "xgboost": 16.713731916330673
+    },
+    {
+      "year": 2025,
+      "baseline_5yr": 32.55849056603773,
+      "ridge": 13.820627987550266,
+      "xgboost": 14.141288763903221
+    },
+    {
+      "year": 2026,
+      "baseline_5yr": 28.006122448979596,
+      "ridge": 11.96670141815973,
+      "xgboost": 11.537660710326062
+    }
+  ],
+  "largest_storage_misses": [
+    {
+      "week_ending": "2023-01-06",
+      "actual": 11.0,
+      "forecast": -93.62998777117048,
+      "baseline": -156.9142857142857
+    },
+    {
+      "week_ending": "2021-02-19",
+      "actual": -338.0,
+      "forecast": -235.94321964808873,
+      "baseline": -119.77142857142857
+    },
+    {
+      "week_ending": "2024-01-19",
+      "actual": -326.0,
+      "forecast": -255.5110859462193,
+      "baseline": -148.31428571428572
+    },
+    {
+      "week_ending": "2026-01-30",
+      "actual": -359.0,
+      "forecast": -295.9420222691127,
+      "baseline": -189.0857142857143
+    },
+    {
+      "week_ending": "2021-06-11",
+      "actual": 16.0,
+      "forecast": 77.99654963357108,
+      "baseline": 86.45714285714286
+    }
+  ],
+  "ridge_drivers": [
+    {
+      "feature": "tgt_hdd_anom",
+      "bcf_per_std": -19.675000441489246
+    },
+    {
+      "feature": "hdd_anom_change",
+      "bcf_per_std": -14.693808314786642
+    },
+    {
+      "feature": "dev_5yr_lag1",
+      "bcf_per_std": 10.86283228170895
+    },
+    {
+      "feature": "tgt_hdd",
+      "bcf_per_std": -8.354211468347518
+    },
+    {
+      "feature": "avg_change_5yr",
+      "bcf_per_std": -7.406757161392534
+    },
+    {
+      "feature": "tgt_cdd_anom",
+      "bcf_per_std": -5.375311764097406
+    },
+    {
+      "feature": "level_vs_5yr",
+      "bcf_per_std": -5.358663952067228
+    },
+    {
+      "feature": "chg_lag1",
+      "bcf_per_std": 4.385515697001785
+    }
+  ]
+}

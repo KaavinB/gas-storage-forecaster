@@ -1,0 +1,35 @@
+[project]
+name = "gas-storage-forecaster"
+version = "0.1.0"
+description = "Forecast weekly Lower-48 natural gas storage changes and Henry Hub price direction, with data-quality checks and threshold alerts."
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "numpy>=2.0",
+    "pandas>=2.2",
+    "psycopg[binary]>=3.2",
+    "python-dotenv>=1.0",
+    "pyyaml>=6.0",
+    "requests>=2.32",
+    "tenacity>=9.0",
+    "scikit-learn>=1.5",
+    "xgboost>=2.1",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "ruff>=0.8",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+markers = ["db: tests that need the Postgres container running"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]

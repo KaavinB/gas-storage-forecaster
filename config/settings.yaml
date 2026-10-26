@@ -1,0 +1,29 @@
+# Non-secret configuration. Secrets live in .env.
+
+sources:
+  eia:
+    base_url: https://api.eia.gov/v2
+    # Verified against the live API before ingestion is written (see README > Data sources).
+    storage_series: NW2_EPG0_SWO_R48_BCF   # Lower-48 working gas in storage, weekly, Bcf
+    henry_hub_series: RNGWHHD              # Henry Hub natural gas spot price, daily, $/MMBtu
+    history_start: "2010-01-01"
+  cpc:
+    base_url: https://ftp.cpc.ncep.noaa.gov/htdocs/degree_days/weighted/daily_data
+    region: CONUS
+    files:
+      # (file, metric, weighting)
+      - [Population.Heating.txt, hdd, population]
+      - [Population.Cooling.txt, cdd, population]
+      - [UtilityGas.Heating.txt, hdd, utility_gas]
+    history_start_year: 2010
+
+http:
+  timeout_seconds: 30
+  max_attempts: 5
+
+alerts:
+  # Fire when the forecast weekly storage change differs from the 5-year average
+  # change for that week by more than this many Bcf.
+  storage_vs_5yr_bcf: 25
+  # Fire when Henry Hub spot moves more than this percent day over day.
+  henry_hub_dod_pct: 5.0

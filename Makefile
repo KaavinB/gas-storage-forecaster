@@ -4,7 +4,7 @@ export
 PY := uv run python
 
 .DEFAULT_GOAL := help
-.PHONY: help setup up down migrate psql test lint ingest ingest-full dq backtest forecast alerts daily site site-data
+.PHONY: help setup up down migrate psql test lint ingest ingest-full dq backtest forecast alerts daily site site-data all
 
 help: ## List available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' Makefile | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-12s\033[0m %s\n", $$1, $$2}'
@@ -47,6 +47,8 @@ site-data:
 
 site: site-data ## Export dashboard data and serve it at http://localhost:8000
 	cd dashboards/site && python3 -m http.server 8000
+
+all: up ingest-full backtest daily ## Build everything from scratch (needs EIA_API_KEY in .env)
 
 psql: ## Open a psql shell inside the container
 	docker compose exec db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB)

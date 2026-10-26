@@ -1,0 +1,32 @@
+name: daily-pipeline
+
+on:
+  schedule:
+    # 16:37 UTC daily: after the Thursday 10:30 ET EIA storage release in both EST and EDT.
+    # Off the top of the hour because GitHub delays cron jobs queued at :00.
+    - cron: "37 16 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: daily-pipeline
+  cancel-in-progress: false
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      EIA_API_KEY: ${{ secrets.EIA_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - run: uv sync --locked --no-dev
+      - name: Migrate schema
+        run: uv run python -m core.migrate
+      - name: Ingest EIA + NOAA CPC
+        run: uv run python -m ingestion.run
+      - name: Data-quality checks (stops the run on failure)
+        run: uv run python -m ingestion.dq
